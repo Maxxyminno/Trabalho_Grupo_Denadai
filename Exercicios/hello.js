@@ -1,0 +1,1 @@
+console.log("Alô SESI Sumaré 2025");
