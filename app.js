@@ -2,10 +2,6 @@ const express = require("express"); // Adiciona o Express na sua aplicação
 const session = require("express-session"); // Adiciona o gerencidor de sessões do Express
 const sqlite3 = require("sqlite3"); // Adiciona a biblioteca para manipular arquivos do SQLite3
 
-
-
-
-
 const app = express(); // Armazena as chamadas e propriedades da biblioteca EXPRESS
 
 const PORT = 8000; // Configura a porta TCP do Express
