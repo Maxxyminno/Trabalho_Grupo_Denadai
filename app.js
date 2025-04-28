@@ -19,6 +19,8 @@ app.get("/", (req, res) => {
     res.render("pages/index");
 })
 
+
+
 // Rota '/sobre' para o método GET /sobre
 app.get("/sobre", (req, res) => {
     console.log("GET /sobre");
