@@ -5,8 +5,15 @@
 
 <body>
     <%- include("../partials/menu"); %>
-    Bem-vido a página Login
-    teste
+    <main>
+        <form action="/login" method="post" class="formItens">
+            Seu nome:
+            <input type="text" name="username" id="username" placeholder="Digite seu nome de usuário"><br>
+            Senha:
+            <input type="password" name="senha" id="senha" placeholder="Digite sua senha"><br>
+            <button type="submit">Entrar</button>
+        </form>
+    </main>
     <%- include("../partials/footer"); %>
 </body>
 

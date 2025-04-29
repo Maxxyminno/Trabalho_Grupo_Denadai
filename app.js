@@ -4,7 +4,7 @@ const sqlite3 = require("sqlite3"); // Adiciona a biblioteca para manipular arqu
 
 const app = express(); // Armazena as chamadas e propriedades da biblioteca EXPRESS
 
-const PORT = 8000; // Configura a porta TCP do Express
+const PORT = 3000; // Configura a porta TCP do Express
 
 // Configura a rota '/static' para a pasta `__dirname/static` do seu servidor 
 app.use('/static', express.static(__dirname + '/static'));
@@ -19,8 +19,6 @@ app.get("/", (req, res) => {
     res.render("pages/index");
 })
 
-
-
 // Rota '/sobre' para o método GET /sobre
 app.get("/sobre", (req, res) => {
     console.log("GET /sobre");
@@ -32,6 +30,12 @@ app.get("/login", (req, res) => {
     console.log("GET /login");
     res.render("pages/login");
 })
+
+app.post("/login", (req, res) => {
+    console.log("POST /login");
+    res.render("pages/login");
+})
+
 
 // Rota '/cadastro' para o método GET /cadastro
 app.get("/cadastro", (req, res) => {

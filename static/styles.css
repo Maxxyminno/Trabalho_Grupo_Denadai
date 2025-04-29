@@ -8,3 +8,19 @@ body {
     align-items: center;
     text-align: center;
 }
+
+header {
+    border: 1px dashed gray;
+}
+
+main {
+    margin:20px;
+    padding: 10px;
+    background-color: beige;
+    border: 1px solid green;
+}
+
+form {
+    padding: 30px;
+    color: red;
+}
