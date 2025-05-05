@@ -7,10 +7,10 @@
     <%- include("../partials/menu"); %>
     <main>
         <form action="/login" method="post" class="formItens">
-            Seu nome:
+            <label for="username">Seu nome:</label>
             <input type="text" name="username" id="username" placeholder="Digite seu nome de usuário"><br>
-            Senha:
-            <input type="password" name="senha" id="senha" placeholder="Digite sua senha"><br>
+            <label for="senha">Senha:</label>
+            <input type="password" name="password" id="senha" placeholder="Digite sua senha"><br>
             <button type="submit">Entrar</button>
         </form>
     </main>
