@@ -5,8 +5,16 @@
 
 <body>
     <%- include("../partials/menu"); %>
-    Bem-vido a página Cadastro
-    form
+    <main>
+        Bem-vido a página Cadastro!
+        <form action="/cadastro" method="post" class="formItens">
+            <label for="username">Seu nome:</label>
+            <input type="text" name="username" id="username" placeholder="Digite seu nome de usuário"><br>
+            <label for="senha">Senha:</label>
+            <input type="password" name="password" id="senha" placeholder="Digite sua senha"><br>
+            <button type="submit">Entrar</button>
+        </form>
+    </main>
     <%- include("../partials/footer"); %>
 </body>
 
