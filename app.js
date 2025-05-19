@@ -38,20 +38,20 @@ app.get("/", (req, res) => {
     console.log("GET /")
     // res.send("Alô SESI Sumaré<br>Bem-vindos ao SENAI Sumaré.");
     // res.send("<img src='./static/senai_logo.jfif' />");
-    res.render("pages/index", { titulo: "Index" });
+    res.render("pages/index", { titulo: "Index" , req: req });
 })
 
 // Rota '/sobre' para o método GET /sobre
 app.get("/sobre", (req, res) => {
     console.log("GET /sobre");
-    res.render("pages/sobre", { titulo: "Sobre" });
+    res.render("pages/sobre", { titulo: "Sobre", req: req });
 })
 
 // Rota '/login' para o método GET /sobre
 app.get("/login", (req, res) => {
     console.log("GET /login");
 
-    res.render("pages/login", { titulo: "Login" });
+    res.render("pages/login", { titulo: "Login", req: req });
 })
 
 // Rota /login para procesamento dos dados do formulário de LOGIN no cliente
