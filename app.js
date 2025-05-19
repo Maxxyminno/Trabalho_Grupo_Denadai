@@ -1,6 +1,10 @@
 const express = require("express"); // Adiciona o Express na sua aplicação
 const session = require("express-session"); // Adiciona o gerencidor de sessões do Express
 const sqlite3 = require("sqlite3"); // Adiciona a biblioteca para manipular arquivos do SQLite3
+const { exec } = require('child_process');
+const { error } = require("console");
+const { stdout, stderr } = require("process");
+
 // const bodyparser = require("body-parser"); // Versão do Express 4.x.z
 
 const app = express(); // Armazena as chamadas e propriedades da biblioteca EXPRESS
@@ -38,7 +42,7 @@ app.get("/", (req, res) => {
     console.log("GET /")
     // res.send("Alô SESI Sumaré<br>Bem-vindos ao SENAI Sumaré.");
     // res.send("<img src='./static/senai_logo.jfif' />");
-    res.render("pages/index", { titulo: "Index" , req: req });
+    res.render("pages/index", { titulo: "Index", req: req });
 })
 
 // Rota '/sobre' para o método GET /sobre
@@ -52,6 +56,21 @@ app.get("/login", (req, res) => {
     console.log("GET /login");
 
     res.render("pages/login", { titulo: "Login", req: req });
+})
+
+app.get("/invalid_user", (req, res) => {
+    console.log("GET /invalid_user");
+    res.render("pages/invalid_user", { titulo: "Usuário não logado", req: req });
+})
+
+app.get("/register_failed", (req, res) => {
+    console.log("GET /register_failed");
+    res.render("pages/register_failed", { titulo: "Usuário já cadastrado", req: req });
+})
+
+app.get("/register_ok", (req, res) => {
+    console.log("GET /register_ok");
+    res.render("pages/register_ok", { titulo: "Usuário cadastrado com sucesso", req: req });
 })
 
 // Rota /login para procesamento dos dados do formulário de LOGIN no cliente
@@ -72,7 +91,7 @@ app.post("/login", (req, res) => {
             res.redirect("/dashboard");
         } else {
             // 3. Se não, executar processo de negação de login
-            res.redirect("/cadastro");
+            res.redirect("/invalid_user");
             //res.send("Usuário inválido");
         }
     })
@@ -89,7 +108,7 @@ app.get("/logout", (req, res) => {
 // Rota '/cadastro' para o método GET /cadastro
 app.get("/cadastro", (req, res) => {
     console.log("GET /cadastro");
-    res.render("pages/cadastro", { titulo: "Cadastro" });
+    res.render("pages/cadastro", { titulo: "Cadastro", req: req });
 })
 
 app.post("/cadastro", (req, res) => {
@@ -107,7 +126,8 @@ app.post("/cadastro", (req, res) => {
         if (row) {
             // 2. Se o usuário existir avisa o usuário que não é possível realizar o cadastro
             console.log(`Usuário: ${username} já cadastrado.`);
-            res.send("Usuário já cadastrado");
+            // res.send("Usuário já cadastrado");
+            res.redirect("/register_failed");
         } else {
             // 3. Se não existir, executar processo de cadastro do usuário
             const insert = "INSERT INTO users (username, password) VALUES (?,?)"
@@ -133,12 +153,30 @@ app.get("/dashboard", (req, res) => {
             if (err) throw err;
             console.log(JSON.stringify(row));
             // Renderiza a página dashboard com a lista de usuário coletada do BD pelo SELECT
-            res.render("pages/dashboard", { titulo: "Tabela de usuário", dados: row });
+            res.render("pages/dashboard", { titulo: "Tabela de usuário", dados: row, req: req });
         });
     } else {
-        res.send("Usuário não logado");
+        // res.send("Usuário não logado");
+        res.redirect("/invalid_user");
     }
 });
+
+const expressVersion = 5;
+
+if (expressVersion == 5) {
+    // Middleware para capturar rotas não existentes - Express >=5
+    app.use('/{*erro}', (req, res) => {
+        // Envia uma resposta de erro 404
+        res.status(404).render('pages/404', { titulo: "ERRO 404", req: req });
+    });
+} else {
+    // Middleware para capturar rotas não existentes - Express <= 4
+    app.use("*", (req, res) => {
+        // Envia uma resposta de erro 404
+        console.log("GET - ERRO 404")
+        res.status(404).render('pages/404', {titulo: "ERRO 404", req: req});
+    });
+}
 
 app.listen(PORT, () => {
     console.log(`Servidor sendo executado na porta ${PORT}`);
