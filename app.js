@@ -18,6 +18,9 @@ db.serialize(() => {
     db.run(
         "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)"
     )
+    db.run(
+        "CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT, id_users INTEGER, titulo TEXT, conteudo TEXT, data_criacao TEXT)"
+    )
 });
 
 app.use(
@@ -85,9 +88,11 @@ app.post("/login", (req, res) => {
         // 1. Verificar se o usuário existe
         console.log(JSON.stringify(row));
         if (row) {
+            console.log("SELECT da tabela users: ", row);
             // 2. Se o usuário existir e a senha é válida no BD, executar processo de login
             req.session.loggedin = true;
             req.session.username = username;
+            req.session.id_username = row.id;
             res.redirect("/dashboard");
         } else {
             // 3. Se não, executar processo de negação de login
@@ -96,6 +101,45 @@ app.post("/login", (req, res) => {
         }
     })
     // res.render("pages/sobre");
+})
+
+
+app.get("/post_create", (req, res) => {
+    console.log("GET /post_create");
+    // Verificar se o usuário está logado
+    if (req.session.loggedin) {
+        // Se estiver logado, envie o formulário para criação do Post
+        res.render("pages/post_form", { titulo: "Criar postagem", req: req });
+    } else {
+        // Se não estiver logado, redirect para /invalid_user
+        res.redirect("/invalid_user");
+    }
+});
+
+app.post("/post_create", (req, res) => {
+    console.log("POST /post_create");
+    // Pegar dados da postagem: UserID, Titulo Postagem, Conteúdo da postagem, Data da postagem
+    // req.session.username, req.session.id_username
+    if (req.session.loggedin) {
+        console.log("Dados da postagem: ", req.body);
+        const { titulo, conteudo } = req.body;
+        const data_criacao = new Date();
+        console.log("Data da criação: ", data_criacao, " Username: ", req.session.username,
+            " id_username: ", req.session.id_username);
+
+        // Criar a postagem com os dados coletados
+        const query = "INSERT INTO posts (id_users, titulo, conteudo, data_criacao) VALUES (?, ?, ? ,?)"
+
+        db.get(query, [req.session.id_username, titulo, conteudo, data_criacao], (err) => {
+            if (err) throw err;
+            res.send('Post criado');
+        })
+        //res.send("Criação de postagem... Em construção ...");
+
+    } else {
+        res.redirect("/invalid_user");
+    }
+
 })
 
 app.get("/logout", (req, res) => {
@@ -161,6 +205,26 @@ app.get("/dashboard", (req, res) => {
     }
 });
 
+// Rota '/post_list_user' para o método GET /post_list_user
+// Lista as posatgens por usuário no dashboard do usuário
+app.get("/post_list_user", (req, res) => {
+    console.log("GET /post_list_user")
+
+    if (req.session.loggedin) {
+        // Listar todos os usuários
+        const query = "SELECT * FROM users";
+        db.get(query, [username], (err, row) => {
+            if (err) throw err;
+            console.log(JSON.stringify(row));
+            // Renderiza a página dashboard com a lista de usuário coletada do BD pelo SELECT
+            res.render("pages/dashboard", { titulo: "Tabela de usuário", dados: row, req: req });
+        });
+    } else {
+        // res.send("Usuário não logado");
+        res.redirect("/invalid_user");
+    }
+});
+
 const expressVersion = 5;
 
 if (expressVersion == 5) {
@@ -174,7 +238,7 @@ if (expressVersion == 5) {
     app.use("*", (req, res) => {
         // Envia uma resposta de erro 404
         console.log("GET - ERRO 404")
-        res.status(404).render('pages/404', {titulo: "ERRO 404", req: req});
+        res.status(404).render('pages/404', { titulo: "ERRO 404", req: req });
     });
 }
 
