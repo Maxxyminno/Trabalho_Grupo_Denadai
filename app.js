@@ -11,7 +11,7 @@ const app = express(); // Armazena as chamadas e propriedades da biblioteca EXPR
 
 const PORT = 3000; // Configura a porta TCP do Express
 
-// Conexão com o banco de dados
+// Conexão com o banco de dado
 const db = new sqlite3.Database("users.db");
 
 db.serialize(() => {
@@ -124,13 +124,14 @@ app.post("/post_create", (req, res) => {
         console.log("Dados da postagem: ", req.body);
         const { titulo, conteudo } = req.body;
         const data_criacao = new Date();
-        console.log("Data da criação: ", data_criacao, " Username: ", req.session.username,
+        const conv = data_criacao.toString();
+        console.log("Data da criação: ", conv, " Username: ", req.session.username,
             " id_username: ", req.session.id_username);
 
         // Criar a postagem com os dados coletados
         const query = "INSERT INTO posts (id_users, titulo, conteudo, data_criacao) VALUES (?, ?, ? ,?)"
 
-        db.get(query, [req.session.id_username, titulo, conteudo, data_criacao], (err) => {
+        db.get(query, [req.session.id_username, titulo, conteudo, conv], (err) => {
             if (err) throw err;
             res.send('Post criado');
         })
@@ -203,6 +204,16 @@ app.get("/dashboard", (req, res) => {
         // res.send("Usuário não logado");
         res.redirect("/invalid_user");
     }
+});
+
+app.get("/postagens", (req, res) => {
+    console.log("GET /postagens")
+        const query = "SELECT * FROM posts";
+        db.all(query, [], (err, row) => {
+            if (err) throw err;
+            console.log(JSON.stringify(row));
+            res.render("pages/postagens", { titulo: "Postagens", dados: row, req: req });
+        });
 });
 
 // Rota '/post_list_user' para o método GET /post_list_user

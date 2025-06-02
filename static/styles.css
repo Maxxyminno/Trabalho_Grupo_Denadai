@@ -33,7 +33,19 @@ nav {
     border
 }
 
+div {
+    text-align: left;
+    margin-top: 5px; 
+    margin-bottom: 15px;   
+}
+
 form {
     padding: 30px;
     color: red;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0;       
+    padding: 0;      
+    line-height: 1;  
 }
