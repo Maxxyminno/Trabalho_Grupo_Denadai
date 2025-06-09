@@ -10,12 +10,12 @@
 
     <a href="/">Home</a>
     <a href="/sobre">Sobre</a>
-    <a href="/postagens">Postagens</a>
+    <a href="/posts">Receitas</a>
     <% if(!req.session.loggedin) { %>
       <a href="/cadastro">Cadastro</a>
       <a href="/login">Login</a>
     <% } else { %>
-      <a href="/post_create">Criar postagem</a>   
+      <a href="/post_create">Postar Receita</a>   
       <a href="/dashboard">Dashboard</a>   
       <a href="/"></a>
       <a href="/logout">Logout</a>   

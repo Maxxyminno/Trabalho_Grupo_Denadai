@@ -16,10 +16,10 @@ const db = new sqlite3.Database("users.db");
 
 db.serialize(() => {
     db.run(
-        "CREATE TABLE IF NOT EXISTS users (id_user INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)"
+        "CREATE TABLE IF NOT EXISTS users (id_user INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT, role TEXT)"
     )
     db.run(
-        "CREATE TABLE IF NOT EXISTS posts (id_post INTEGER PRIMARY KEY AUTOINCREMENT, id_users INTEGER, titulo TEXT, conteudo TEXT, data_criacao TEXT)"
+        "CREATE TABLE IF NOT EXISTS posts (id_post INTEGER PRIMARY KEY AUTOINCREMENT, id_users INTEGER, title TEXT, ingredients TEXT, howToMake TEXT, dateCreated TEXT)"
     )
 });
 
@@ -54,26 +54,46 @@ app.get("/sobre", (req, res) => {
     res.render("pages/sobre", { titulo: "Sobre", req: req });
 })
 
+app.get("/cadastro", (req, res) => {
+    console.log("GET /cadastro");
+    res.render("pages/cadastro", { titulo: "Cadastro", req: req });
+})
+
+app.post("/cadastro", (req, res) => {
+    console.log("POST /cadastro");
+    console.log(JSON.stringify(req.body));
+    const { username, password, role } = req.body;
+
+    const query = "SELECT * FROM users WHERE username=?"
+
+    db.get(query, [username], (err, row) => {
+        if (err) throw err;
+
+        // 1. Verificar se o usuário existe
+        console.log("Query SELECT do cadastro:", JSON.stringify(row));
+        if (row) {
+            // 2. Se o usuário existir avisa o usuário que não é possível realizar o cadastro
+            console.log(`Usuário: ${username} já cadastrado.`);
+            // res.send("Usuário já cadastrado");
+            res.redirect("/register_failed");
+        } else {
+            // 3. Se não existir, executar processo de cadastro do usuário
+            const insert = "INSERT INTO users (username, password, role) VALUES (?,?,?)"
+            db.get(insert, [username, password, role], (err, row) => {
+                if (err) throw err;
+                console.log(`Usuário: ${username} cadastrado com sucesso.`)
+                res.redirect("/login"); // Redireciona para a página de login caso o registro tenha sucesso.
+            })
+        }
+    })
+    // res.render("pages/sobre");
+})
+
 // Rota '/login' para o método GET /sobre
 app.get("/login", (req, res) => {
     console.log("GET /login");
 
     res.render("pages/login", { titulo: "Login", req: req });
-})
-
-app.get("/invalid_user", (req, res) => {
-    console.log("GET /invalid_user");
-    res.render("pages/invalid_user", { titulo: "Usuário não logado", req: req });
-})
-
-app.get("/register_failed", (req, res) => {
-    console.log("GET /register_failed");
-    res.render("pages/register_failed", { titulo: "Usuário já cadastrado", req: req });
-})
-
-app.get("/register_ok", (req, res) => {
-    console.log("GET /register_ok");
-    res.render("pages/register_ok", { titulo: "Usuário cadastrado com sucesso", req: req });
 })
 
 // Rota /login para procesamento dos dados do formulário de LOGIN no cliente
@@ -93,6 +113,7 @@ app.post("/login", (req, res) => {
             req.session.loggedin = true;
             req.session.username = username;
             req.session.id_username = row.id_user;
+            req.session.role = row.role
             res.redirect("/dashboard");
         } else {
             // 3. Se não, executar processo de negação de login
@@ -122,7 +143,7 @@ app.post("/post_create", (req, res) => {
     // req.session.username, req.session.id_username
     if (req.session.loggedin) {
         console.log("Dados da postagem: ", req.body);
-        const { titulo, conteudo } = req.body;
+        const { title, ingredients, howToMake } = req.body;
         const data_criacao = new Date();
         const dateConv = data_criacao.toLocaleDateString();
         console.log("Data da criação: ", dateConv, 
@@ -130,18 +151,47 @@ app.post("/post_create", (req, res) => {
                     " id_username: ", req.session.id_username);
 
         // Criar a postagem com os dados coletados
-        const query = "INSERT INTO posts (id_users, titulo, conteudo, data_criacao) VALUES (?, ?, ? ,?)"
+        const query = "INSERT INTO posts (id_users, title, ingredients, howToMake, dateCreated) VALUES (?, ?, ? ,?,?)"
 
-        db.get(query, [req.session.id_username, titulo, conteudo, dateConv], (err) => {
+        db.get(query, [req.session.id_username, title, ingredients, howToMake, dateConv], (err) => {
             if (err) throw err;
-            res.render("pages/post_form", { titulo: "Post criado", req: req });
+            res.render("pages/post_createSuccess", { titulo: "Post criado", req: req });
         })
-        //res.send("Criação de postagem... Em construção ...");
-
     } else {
         res.redirect("/invalid_user");
     }
 
+})
+
+app.get("/postVisualizer/:id", (req, res) =>{
+    const postID = req.params.id;
+    const query = `
+            SELECT posts.*, users.username
+            FROM posts
+            JOIN users ON posts.id_users = users.id_user
+            WHERE posts.id_post = ?`;
+
+            db.get(query, [postID], (err, row) =>{
+                if(err) {
+                    console.error("Erro ao buscar post:", err);
+                    return res.status(500).render('pages/error', {
+                        message: "Erro ao buscar post",
+                        error: err
+                    });
+                }
+
+                if(!row){
+                    return res.status(404).render('pages/error', {
+                        message: "Post não encontrado",
+                        error: {status: 404}
+                    })
+                }
+                res.render("pages/postVisualizer", {
+                    titulo: row.title,
+                    dados: row,
+                    req:res
+                })
+            })
 })
 
 app.get("/logout", (req, res) => {
@@ -150,43 +200,6 @@ app.get("/logout", (req, res) => {
         res.redirect("/");
     });
 });
-
-// Rota '/cadastro' para o método GET /cadastro
-app.get("/cadastro", (req, res) => {
-    console.log("GET /cadastro");
-    res.render("pages/cadastro", { titulo: "Cadastro", req: req });
-})
-
-app.post("/cadastro", (req, res) => {
-    console.log("POST /cadastro");
-    console.log(JSON.stringify(req.body));
-    const { username, password } = req.body;
-
-    const query = "SELECT * FROM users WHERE username=?"
-
-    db.get(query, [username], (err, row) => {
-        if (err) throw err;
-
-        // 1. Verificar se o usuário existe
-        console.log("Query SELECT do cadastro:", JSON.stringify(row));
-        if (row) {
-            // 2. Se o usuário existir avisa o usuário que não é possível realizar o cadastro
-            console.log(`Usuário: ${username} já cadastrado.`);
-            // res.send("Usuário já cadastrado");
-            res.redirect("/register_failed");
-        } else {
-            // 3. Se não existir, executar processo de cadastro do usuário
-            const insert = "INSERT INTO users (username, password) VALUES (?,?)"
-            db.get(insert, [username, password], (err, row) => {
-                if (err) throw err;
-
-                console.log(`Usuário: ${username} cadastrado com sucesso.`)
-                res.redirect("/login"); // Redireciona para a página de login caso o registro tenha sucesso.
-            })
-        }
-    })
-    // res.render("pages/sobre");
-})
 
 // Rota '/dashboard' para o método GET /dashboard
 app.get("/dashboard", (req, res) => {
@@ -207,13 +220,13 @@ app.get("/dashboard", (req, res) => {
     }
 });
 
-app.get("/postagens", (req, res) => {
-    console.log("GET /postagens")
+app.get("/posts", (req, res) => {
+    console.log("GET /posts")
         const query = "SELECT * FROM posts LEFT JOIN users ON users.id_user = posts.id_users";
         db.all(query, [], (err, row) => {
             if (err) throw err;
             console.log(JSON.stringify(row));
-            res.render("pages/postagens", { titulo: "Postagens", dados: row, req: req });
+            res.render("pages/posts", { titulo: "Postagens", dados: row, req: req });
         });
 });
 
@@ -237,6 +250,21 @@ app.get("/post_list_user", (req, res) => {
     }
 });
 
+app.get("/invalid_user", (req, res) => {
+    console.log("GET /invalid_user");
+    res.render("pages/invalid_user", { titulo: "Usuário não logado", req: req });
+})
+
+app.get("/register_failed", (req, res) => {
+    console.log("GET /register_failed");
+    res.render("pages/register_failed", { titulo: "Usuário já cadastrado", req: req });
+})
+
+app.get("/register_ok", (req, res) => {
+    console.log("GET /register_ok");
+    res.render("pages/register_ok", { titulo: "Usuário cadastrado com sucesso", req: req });
+})
+
 const expressVersion = 5;
 
 if (expressVersion == 5) {
@@ -246,7 +274,7 @@ if (expressVersion == 5) {
         res.status(404).render('pages/404', { titulo: "ERRO 404", req: req });
     });
 } else {
-    // Middleware para capturar rotas não existentes - Express <= 4
+    // Middleware para capturar rotas não exi\stentes - Express <= 4
     app.use("*", (req, res) => {
         // Envia uma resposta de erro 404
         console.log("GET - ERRO 404")

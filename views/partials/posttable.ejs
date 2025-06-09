@@ -1,9 +1,7 @@
         <% let i = 0; for(i = 0; i < dados.length; i++){ %>
-        <div>
-        <h2> <%- dados[i].titulo %> </h2>
+        <div><a href="/postVisualizer/<%= dados[i].id_post %>">
+        <h2> <%- dados[i].title %> </h2>
         <h6> user: <%- dados[i].username %> </h6>
-        <p> <%- dados[i].conteudo %> </p> <br>
-        <h5><%- dados[i].data_criacao %></h5>
+        <h5><%- dados[i].dateCreated %></h5></a>
         </div>
         <% } %>
-</table>
