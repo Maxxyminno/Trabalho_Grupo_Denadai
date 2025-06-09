@@ -16,10 +16,10 @@ const db = new sqlite3.Database("users.db");
 
 db.serialize(() => {
     db.run(
-        "CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)"
+        "CREATE TABLE IF NOT EXISTS users (id_user INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)"
     )
     db.run(
-        "CREATE TABLE IF NOT EXISTS posts (id INTEGER PRIMARY KEY AUTOINCREMENT, id_users INTEGER, titulo TEXT, conteudo TEXT, data_criacao TEXT)"
+        "CREATE TABLE IF NOT EXISTS posts (id_post INTEGER PRIMARY KEY AUTOINCREMENT, id_users INTEGER, titulo TEXT, conteudo TEXT, data_criacao TEXT)"
     )
 });
 
@@ -92,7 +92,7 @@ app.post("/login", (req, res) => {
             // 2. Se o usuário existir e a senha é válida no BD, executar processo de login
             req.session.loggedin = true;
             req.session.username = username;
-            req.session.id_username = row.id;
+            req.session.id_username = row.id_user;
             res.redirect("/dashboard");
         } else {
             // 3. Se não, executar processo de negação de login
@@ -124,16 +124,17 @@ app.post("/post_create", (req, res) => {
         console.log("Dados da postagem: ", req.body);
         const { titulo, conteudo } = req.body;
         const data_criacao = new Date();
-        const conv = data_criacao.toString();
-        console.log("Data da criação: ", conv, " Username: ", req.session.username,
-            " id_username: ", req.session.id_username);
+        const dateConv = data_criacao.toLocaleDateString();
+        console.log("Data da criação: ", dateConv, 
+                    " Username: ", req.session.username,
+                    " id_username: ", req.session.id_username);
 
         // Criar a postagem com os dados coletados
         const query = "INSERT INTO posts (id_users, titulo, conteudo, data_criacao) VALUES (?, ?, ? ,?)"
 
-        db.get(query, [req.session.id_username, titulo, conteudo, conv], (err) => {
+        db.get(query, [req.session.id_username, titulo, conteudo, dateConv], (err) => {
             if (err) throw err;
-            res.send('Post criado');
+            res.render("pages/post_form", { titulo: "Post criado", req: req });
         })
         //res.send("Criação de postagem... Em construção ...");
 
@@ -208,7 +209,7 @@ app.get("/dashboard", (req, res) => {
 
 app.get("/postagens", (req, res) => {
     console.log("GET /postagens")
-        const query = "SELECT * FROM posts";
+        const query = "SELECT * FROM posts LEFT JOIN users ON users.id_user = posts.id_users";
         db.all(query, [], (err, row) => {
             if (err) throw err;
             console.log(JSON.stringify(row));
