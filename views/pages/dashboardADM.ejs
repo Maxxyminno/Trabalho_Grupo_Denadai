@@ -6,7 +6,11 @@
 <body>
     <%- include("../partials/menu"); %>
     <main>
-        <%- include("../partials/usertable"); %>
+        <% if(table == "users"){ %>
+        <%- include("../partials/userTable"); %>
+        <% } else{ %>
+        <%- include("../partials/postTable"); %>
+        <% } %>
     </main>
     <%- include("../partials/footer"); %>
 </body>

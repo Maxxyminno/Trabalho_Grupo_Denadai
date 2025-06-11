@@ -16,9 +16,10 @@
       <a href="/login">Login</a>
     <% } else { %>
       <a href="/post_create">Postar Receita</a>   
-      <a href="/dashboard">Dashboard</a>   
-      <a href="/"></a>
-      <a href="/logout">Logout</a>   
-    <% } %>
+      <a href="/dashboard">Suas Receitas</a>   
+      <a href="/logout">Logout</a>  
+      <% if(req.session.role == "adm"){ %>
+      <a href="/dashboardADM/users">Dashboard ADM</a>
+    <% } } %>
   </nav>
 </header>

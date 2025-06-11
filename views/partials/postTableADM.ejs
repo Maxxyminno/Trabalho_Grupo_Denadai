@@ -3,18 +3,20 @@
   <thead>
     <tr>
       <th>ID</th>
+      <th>ID User</th>
       <th>Username</th>
-      <th>Password</th>
-      <th>Role</th>
+      <th>Title</th>
+      <th>Data Posted</th>
     </tr>
   </thead>
   <tbody>
     <% let i;for(i=0; i<dados.length; i++) { %>
     <tr>
-      <td><%= dados[i].id_user %></td>
+      <td><%= dados[i].id_post %></td>
+      <td><%= dados[i].id_users %></td>
       <td><%= dados[i].username %></td>
-      <td><%= dados[i].password %></td>
-      <td><%= dados[i].role %></td>
+      <td><%= dados[i].title %></td>
+      <td><%= dados[i].dateCreated %></td>
     </tr>
     <% } %>
   </tbody>
