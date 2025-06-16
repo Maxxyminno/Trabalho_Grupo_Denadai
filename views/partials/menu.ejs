@@ -1,13 +1,6 @@
 <header>
   <% const w=64; const h=w; const size=`width=${w} heigth=${h}` %>
   <nav>
-    <!-- <a href="/"><img src='./static/senai_logo.jfif' <%#= size %> > </a>
-    <a href="/sobre"><img src='./static/senai_logo.jfif' <%#= size %>></a>
-    <a href="/cadastro"><img src='./static/senai_logo.jfif' <%#= size %>></a>
-    <a href="/login"><img src='./static/senai_logo.jfif' <%#= size %>></a>
-    <a href="/dashboard"><img src='./static/senai_logo.jfif' <%#= size %>></a>
-    <a href="/"><img src='./static/senai_logo.jfif' <%#= size %>></a> -->
-
     <a href="/">Home</a>
     <a href="/sobre">Sobre</a>
     <a href="/posts">Receitas</a>
@@ -16,7 +9,7 @@
       <a href="/login">Login</a>
     <% } else { %>
       <a href="/post_create">Postar Receita</a>   
-      <a href="/dashboard">Suas Receitas</a>   
+      <a href="/dashboard">Dashboard</a>   
       <a href="/logout">Logout</a>  
       <% if(req.session.role == "adm"){ %>
       <a href="/dashboardADM/users">Dashboard ADM</a>

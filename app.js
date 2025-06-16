@@ -149,31 +149,35 @@ app.get("/dashboard", (req, res) => {
     }
 });
 
-app.get("/dashboardADM/:table", (req, res) =>{
+app.get("/dashboardADM/users", (req, res) =>{
     console.log("GET /dashboardADM")
-    const table = req.params.table;
     if (req.session.loggedin || req.session.role == "adm") {
-        if(table == "users"){
         // Listar todos os usuários
         const query = "SELECT * FROM users";
         db.all(query, [], (err, row) => {
             if (err) throw err;
             console.log(JSON.stringify(row));
             // Renderiza a página dashboard com a lista de usuário coletada do BD pelo SELECT
-            res.render("pages/dashboardADM", {titulo: "Tabela de users", dados: row, req: req, table:table});
-        })};
-        if(table == "posts"){
+            res.render("pages/dashboardADM", {titulo: "Tabela de users", dados: row, req: req, table:"users"});
+        });
+    } else {
+        res.redirect("/invalidUser");
+    }
+})
+
+app.get("/dashboardADM/posts", (req, res) =>{
+    console.log("GET /dashboardADM")
+    const table = req.params.table;
+    if (req.session.loggedin || req.session.role == "adm") {
             const query = `
             SELECT posts.*, users.username FROM posts
-            JOIN users ON posts.id_users = users.id_user
-            WHERE posts.id_post = ?`;
+            JOIN users ON posts.id_users = users.id_user`;
             db.all(query, [], (err, row) => {
                 if (err) throw err;
                 console.log(JSON.stringify(row));
                 // Renderiza a página dashboard com a lista de usuário coletada do BD pelo SELECT
                 res.render("pages/dashboardADM", {titulo: "Tabela de Posts", dados: row, req: req, table:table});
             })
-        }
     } else {
         res.redirect("/invalidUser");
     }
@@ -216,6 +220,16 @@ app.post("/post_create", (req, res) => {
 
 })
 
+app.get("/posts", (req, res) => {
+    console.log("GET /posts")
+    const query = "SELECT * FROM posts LEFT JOIN users ON users.id_user = posts.id_users";
+    db.all(query, [], (err, row) => {
+        if (err) throw err;
+        console.log(JSON.stringify(row));
+        res.render("pages/posts", { titulo: "Postagens", dados: row, req: req });
+    });
+});
+
 app.get("/postVisualizer/:id", (req, res) => {
     console.log("/postVisualizer")
     const postID = req.params.id;
@@ -223,8 +237,7 @@ app.get("/postVisualizer/:id", (req, res) => {
             SELECT posts.*, users.username FROM posts
             JOIN users ON posts.id_users = users.id_user
             WHERE posts.id_post = ?`;
-
-    db.all(query, [postID], (err, row) => {
+    db.get(query, [postID], (err, row) => {
         if (err) {
             console.error("Erro ao buscar post:", err);
             return res.status(500).render('./pages/errorVisualizer', {
@@ -234,6 +247,7 @@ app.get("/postVisualizer/:id", (req, res) => {
         if (!row) {
             return res.status(404).render('pages/404', { req: req })
         }
+        console.log(JSON.stringify(row));
         res.render("pages/postVisualizer", {
             titulo: row.title, dados: row, req: res, req: req
         })
@@ -259,20 +273,55 @@ app.get("/userVisualizer/:id", (req, res) => {
         }
         console.log(JSON.stringify(row));
         res.render("pages/userVisualizer", {
-            titulo: row.username, dados: row, req: req
+            titulo: row[0].username, dados: row, req: req
         })
     })
 })
 
-app.get("/posts", (req, res) => {
-    console.log("GET /posts")
-    const query = "SELECT * FROM posts LEFT JOIN users ON users.id_user = posts.id_users";
-    db.all(query, [], (err, row) => {
-        if (err) throw err;
-        console.log(JSON.stringify(row));
-        res.render("pages/posts", { titulo: "Postagens", dados: row, req: req });
+// Rota para deletar usuário
+app.delete('/users/:id', (req, res) => {
+    if (!req.session.loggedin || req.session.role !== 'admin') {
+      return res.status(403).send('Acesso negado');
+    }
+  
+    db.run('DELETE FROM users WHERE id_user = ?', [req.params.id], function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Erro ao deletar usuário');
+      }
+      res.sendStatus(200);
     });
-});
+  });
+  
+  // Rota para editar usuário
+  app.patch('/users/:id', (req, res) => {
+    if (!req.session.loggedin || req.session.role !== 'admin') {
+      return res.status(403).send('Acesso negado');
+    }
+  
+    const { role } = req.body;
+    db.run('UPDATE users SET role = ? WHERE id_user = ?', [role, req.params.id], function(err) {
+      if (err) {
+        console.error(err);
+        return res.status(500).send('Erro ao atualizar usuário');
+      }
+      res.sendStatus(200);
+    });
+  });
+  
+  // Rota para página de edição
+  app.get('/users/edit/:id', (req, res) => {
+    if (!req.session.loggedin) {
+      return res.redirect('/login');
+    }
+  
+    db.get('SELECT * FROM users WHERE id_user = ?', [req.params.id], (err, user) => {
+      if (err || !user) {
+        return res.status(404).render('pages/404', { req: req });
+      }
+      res.render('pages/editUser', { user, req: req });
+    });
+  });
 
 // Rota '/post_list_user' para o método GET /post_list_user
 // Lista as posatgens por usuário no dashboard do usuário
