@@ -1,12 +1,11 @@
 <%- console.log("USERTABLE:",JSON.stringify(dados)) %>
-<table width="100%">
-  <thead>
+<table class="table">
+ <thead>
     <tr>
       <th>ID Post</th>
       <th>Usuário</th>
       <th>Nome da Receita</th>
       <th>Data de Postagem</th>
-      <th>Ferramentas</th>
     </tr>
   </thead>
   <tbody>
@@ -16,7 +15,6 @@
       <td><%= dados[i].username %></td>
       <td><%= dados[i].title %></td>
       <td><%= dados[i].dateCreated %></td>
-      <td>sei la</td>
     </tr>
     <% } %>
   </tbody>
