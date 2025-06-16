@@ -5,6 +5,7 @@ const { exec } = require('child_process');
 const { error } = require("console");
 const { stdout, stderr } = require("process");
 
+
 // const bodyparser = require("body-parser"); // Versão do Express 4.x.z
 
 const app = express(); // Armazena as chamadas e propriedades da biblioteca EXPRESS
