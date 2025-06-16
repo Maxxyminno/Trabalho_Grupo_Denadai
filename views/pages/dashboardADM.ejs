@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<%- include("../partials/head"); %>
+
+<body>
+    <%- include("../partials/menu"); %>
+    <main>
+        <% if(table == "users"){ %>
+        <%- include("../partials/userTable"); %>
+        <a href="/dashboardADM/posts">Ir para tabela de Posts</a>
+        <% } else{ %>
+        <%- include("../partials/postTable"); %>
+        <a href="/dashboardADM/users">Ir para tabela de Usuários</a>
+        <% } %>
+    </main>
+    <%- include("../partials/footer"); %>
+</body>
+
+</html>

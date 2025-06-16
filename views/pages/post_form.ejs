@@ -7,12 +7,13 @@
     <%- include("../partials/menu"); %>
     <main>
         <form action="/post_create" method="post" style="justify-content: left; text-align: left;">
-            <label for="titulo">Título:</label>
-            <input type="text" id="titulo" name="titulo" required/><br>
-            <label for="conteudo">Conteúdo:</label><br>
-            <textarea id="conteudo" name="conteudo" rows="10" cols="70" required></textarea><br>
-
-            <button type="submit">Cadastrar postagem</button>
+            <label for="title">Nome da Receita:</label><br>
+            <input type="text" id="title" name="title" required/><br>
+            <label for="ingredients">Ingredientes:</label><br>
+            <textarea id="ingredients" name="ingredients" rows="5" cols="50" required></textarea><br>
+            <label for="howToMake">Como Fazer:</label><br>
+            <textarea id="howToMake" name="howToMake" rows="10" cols="50" required></textarea><br>
+            <center><button type="submit">Postar Receita</button></center>
         </form>
     </main>
     <%- include("../partials/footer"); %>
