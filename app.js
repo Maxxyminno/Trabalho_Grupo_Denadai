@@ -4,9 +4,14 @@ const sqlite3 = require("sqlite3"); // Adiciona a biblioteca para manipular arqu
 const { exec } = require('child_process');
 const { error } = require("console");
 const { stdout, stderr } = require("process");
-
+const xss = require("xss"); // Biblioteca para evitar ataques XSS
 
 // const bodyparser = require("body-parser"); // Versão do Express 4.x.z
+
+// Função para sanitizar entradas e evitar scripts maliciosos
+function cleanData(userInput) {
+    return xss(userInput);
+  }
 
 const app = express(); // Armazena as chamadas e propriedades da biblioteca EXPRESS
 
@@ -81,7 +86,8 @@ app.get("/register_ok", (req, res) => {
 app.post("/login", (req, res) => {
     console.log("POST /login");
     console.log(JSON.stringify(req.body));
-    const { username, password } = req.body;
+    const username = cleanData(req.body.username);
+    const password = cleanData(req.body.password);
     const query = "SELECT * FROM users WHERE username=? AND password=?"
     db.get(query, [username, password], (err, row) => {
         if (err) throw err;
@@ -159,7 +165,8 @@ app.get("/cadastro", (req, res) => {
 app.post("/cadastro", (req, res) => {
     console.log("POST /cadastro");
     console.log(JSON.stringify(req.body));
-    const { username, password } = req.body;
+    const username = cleanData(req.body.username);
+    const password = cleanData(req.body.password);
 
     const query = "SELECT * FROM users WHERE username=?"
 
